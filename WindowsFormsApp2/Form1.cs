@@ -109,10 +109,8 @@ namespace WindowsFormsApp2
 
                 // Datei erstellen
                 if (Result == DialogResult.Yes) {
-                    MakeBtn.Text = "Erstelle ...";      // Button-Text aendern um die Abarbeitung zu signalisieren
                     makeSheet(InputFile, OutputFile);                        // Datei erstellen
-                    MakeBtn.Text = "Erstellen";         // Button-Text wieder zuruecksetzen
-
+                    
                     // Fragen, ob die Datei direkt geoeffnet werden soll
                     Result = MessageBox.Show("Einrichteblatt wurde erstellt. Jetzt öffnen?", "Fertig", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                     if (Result == DialogResult.Yes) {
@@ -206,7 +204,7 @@ namespace WindowsFormsApp2
                 Stream.WriteLine(originZ.TrimStart(';').TrimStart(' ').TrimStart('(').TrimEnd(')'));
             }
 
-            Stream.WriteLine(Environment.NewLine + "Unterprogramme:" + Environment.NewLine);
+            Stream.WriteLine(Environment.NewLine + "Unterprogramme:");
             
             // Fraes-UPs parsen
             Index = 0;
