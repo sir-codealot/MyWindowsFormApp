@@ -7,16 +7,9 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace WindowsFormsApp2
@@ -24,12 +17,15 @@ namespace WindowsFormsApp2
     public partial class mainWindow : Form
     {
         // ###############   Wichtige Variablen fuer die App   #######################
-        static String AppVersion = "0.7a.NET";
-        static String LastModified = "06.12.2017";
+        static String AppVersion = "0.8.NET-RC";
+        static String LastModified = "07.12.2017";
+        static String dotNetVer = "4.5.2";
         static String Author = "Henry Wünsche <henry.wuensche@mail.de>";
         static String LICENSE = "GPLv2";
         static String AboutMSG = "Programm zum Erstellen von Einrichteblättern\nfür umfangreiche CNC-Programme.\n\nVersion: " + AppVersion +
-                                 "\nAktualisiert am: " + LastModified + "\n\nAuthor: " + Author +
+                                 "\nBenötigte .NET-Version: " + dotNetVer +
+                                 "\nAktualisiert am: " + LastModified +
+                                 "\n\nAuthor: " + Author +
                                  "\n\nLizenz: " + LICENSE;
 
         public bool IsChecked = false;
@@ -91,11 +87,11 @@ namespace WindowsFormsApp2
             DialogResult Result = DialogResult.No;
 
             // Kontrollieren, ob Eingaben alle korrekt sind und ob die Ausgabedatei evtl. bereits existiert
-            if ((InputFile == "") || (OutputFile == "") || (Directory.Exists(Path.GetDirectoryName(InputFile)) == false)) {
-                MessageBox.Show("Fehler! Falsche Eingabe oder Quelldatei existiert nicht!\nInputFile: " + InputFile + "\nOutpuFile: " + OutputFile + "\nDirExists = " + Directory.Exists(Path.GetDirectoryName(InputFile)), "", MessageBoxButtons.OK, icon: MessageBoxIcon.Warning);
-            }
-            else
-            {
+            if (String.IsNullOrWhiteSpace(InputFile) || String.IsNullOrEmpty(OutputFile)) {
+                MessageBox.Show("Fehler! Nicht alle benötigten Eingaben wurden vorgenommen!", "", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            } else if (!File.Exists(Path.GetFullPath(InputFile)) || !File.Exists(Path.GetFullPath(OutputFile)) || !Directory.Exists(Path.GetDirectoryName(InputFile))) {
+                MessageBox.Show("Fehler! Falsche Eingabe oder Quelldatei existiert nicht!", "", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            } else {
                 if (Directory.Exists(Path.GetDirectoryName(OutputFile))) {
                     // Abfragen, ob bereits gefragt wurde ob Datei ueberschrieben werden darf
                     if (IsChecked) {
@@ -163,17 +159,7 @@ namespace WindowsFormsApp2
             Stream.WriteLine("MPF" + PGMNAME.Replace("%_N_", "").Replace("MPF", "").Replace("_", ".MPF"));
             Stream.WriteLine(SPANNUNG.TrimStart(';').TrimStart(' ').TrimStart('(').TrimEnd(')').Replace(".", ". "));
             Stream.WriteLine("********************"+Environment.NewLine);
-
-            /*          if (SPANNUNG.Length > 12) { 
-                            Stream.WriteLine(SPANNUNG.Trim(';').Trim(' ').Trim('(').Trim(')').Insert('.', ". "));
-                        } 
-                        else
-                        {
-                            Stream.WriteLine(SPANNUNG[0].Trim(";").Trim(" ").Trim("(").Trim(")").Insert(".", ". ")); }
-                            Stream.WriteLine("********************");
-                            Stream.WriteLine();
-                        }    */
-
+            
             // Datum, falls gefunden eintragen
             if (LASTRUN.Length > 1)
                 Stream.WriteLine(LASTRUN.TrimStart(';').TrimStart(' ')+Environment.NewLine);
@@ -227,12 +213,17 @@ namespace WindowsFormsApp2
             foreach (String i in File.ReadLines(InputFile))
             {
                 if (i.Contains("%_N_L") && i.Contains("_SPF")) {
-                    // MessageBox.Show("Zeile: " + Index + "\nText: " + i, "DEBUG");
                     Comment = getMillComment(InputFile, i, placeholder, DMC100, UNIPORT, FOREST, UNION);
                     Stream.WriteLine(i.Replace("%_N_", "").Replace("_SPF", "") + Comment);
                 }
                 Index++;
             }
+
+            // Falls Frae-UPs gefunden werden wird die Variable "Comment" beschrieben.
+            // Ist das der Fall wird eine zusaetzliche Leerzeile zwischen Fraes- und Bohr-UPs
+            // eingefuegt, um die Lesbarkeit zu verbessern
+            if (Comment != "")
+                Stream.WriteLine();
 
             // Bohr-UPs
             Index = 0;
@@ -249,10 +240,8 @@ namespace WindowsFormsApp2
         }
 
         public String SearchForString(String SearchString, String SearchFile) {
-            // MessageBox.Show("String: " + SearchString + "\nDatei: " + SearchFile, "DEBUG");  // Zum Debuggen
             foreach (String i in File.ReadLines(SearchFile)) {
                 if (i.Contains(SearchString)){
-                    // MessageBox.Show(i, "DEBUG"); // Zum Debuggin
                     return i;
                 }
             }
@@ -343,7 +332,6 @@ namespace WindowsFormsApp2
                     Idx--;
                 }
                 com = comm.Split(';');
-                MessageBox.Show(com[1].TrimStart().Replace("(", "").Replace(")", ""), "DEBUG");
                 return " - " + com[1].TrimStart().Replace("(", "").Replace(")", "");
             } else {
                 FIRST_L = UP.Replace("%_N_L", "R500=").Replace("_SPF", "");
