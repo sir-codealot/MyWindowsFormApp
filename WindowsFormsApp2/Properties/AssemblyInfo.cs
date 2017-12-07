@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Henry Wünsche")]
 [assembly: AssemblyProduct("Einrichteblatt erstellen")]
-[assembly: AssemblyCopyright("GPLv2")]
+[assembly: AssemblyCopyright("MIT 2.0")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
