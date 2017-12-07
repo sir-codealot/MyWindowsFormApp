@@ -10,6 +10,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Windows.Forms;
 
 namespace WindowsFormsApp2
@@ -17,16 +18,16 @@ namespace WindowsFormsApp2
     public partial class mainWindow : Form
     {
         // ###############   Wichtige Variablen fuer die App   #######################
-        static String AppVersion = "0.8.NET-RC";
-        static String LastModified = "07.12.2017";
+        static Assembly assembly = Assembly.GetExecutingAssembly();
+        static FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
+
         static String dotNetVer = "4.5.2";
-        static String Author = "Henry Wünsche <henry.wuensche@mail.de>";
-        static String LICENSE = "GPLv2";
-        static String AboutMSG = "Programm zum Erstellen von Einrichteblättern\nfür umfangreiche CNC-Programme.\n\nVersion: " + AppVersion +
+        static String AboutMSG = fvi.Comments + 
+                                 "\n\nVersion: " + fvi.FileVersion +
                                  "\nBenötigte .NET-Version: " + dotNetVer +
-                                 "\nAktualisiert am: " + LastModified +
-                                 "\n\nAuthor: " + Author +
-                                 "\n\nLizenz: " + LICENSE;
+                                 "\nAktualisiert am: " + new FileInfo(Assembly.GetExecutingAssembly().Location).LastWriteTime.ToShortDateString() +
+                                 "\n\nAuthor: " + fvi.CompanyName +
+                                 "\n\nLizenz: " + fvi.LegalCopyright;
 
         public bool IsChecked = false;
         private String WorkingDir = "C:\\%USER%\\Documents";
@@ -87,11 +88,13 @@ namespace WindowsFormsApp2
             DialogResult Result = DialogResult.No;
 
             // Kontrollieren, ob Eingaben alle korrekt sind und ob die Ausgabedatei evtl. bereits existiert
-            if (String.IsNullOrWhiteSpace(InputFile) || String.IsNullOrEmpty(OutputFile)) {
+            if (String.IsNullOrWhiteSpace(InputFile) || String.IsNullOrEmpty(OutputFile))
                 MessageBox.Show("Fehler! Nicht alle benötigten Eingaben wurden vorgenommen!", "", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            } else if (!File.Exists(Path.GetFullPath(InputFile)) || !File.Exists(Path.GetFullPath(OutputFile)) || !Directory.Exists(Path.GetDirectoryName(InputFile))) {
+            else if (!File.Exists(Path.GetFullPath(InputFile)) || !File.Exists(Path.GetFullPath(OutputFile)) || !Directory.Exists(Path.GetDirectoryName(InputFile)))
                 MessageBox.Show("Fehler! Falsche Eingabe oder Quelldatei existiert nicht!", "", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            } else {
+            else if (InputFile == OutputFile)
+                MessageBox.Show("Fehler\nQuell- und Ziel-Datei sind identisch!", "", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            else {
                 if (Directory.Exists(Path.GetDirectoryName(OutputFile))) {
                     // Abfragen, ob bereits gefragt wurde ob Datei ueberschrieben werden darf
                     if (IsChecked) {
@@ -195,7 +198,6 @@ namespace WindowsFormsApp2
             originX = SearchForString(oriSearchX, InputFile);  // NP-Beschreibung fuer X finden
             originY = SearchForString(oriSearchY, InputFile);  //NP-Beschreibung fuer Y finden
             originZ = SearchForString(oriSearchZ, InputFile);  // NP-Beschreibung fuer Z finden
-            // MessageBox.Show(originX + "\n" + originY + "\n" + originZ, "DEBUG");    // Zum Debugging
             
             if (originX != "" || originZ != "" || originZ != "") {
                 Stream.WriteLine(Environment.NewLine + "Nullpunkt:");
