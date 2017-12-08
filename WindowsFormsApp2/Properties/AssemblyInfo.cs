@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // Attribute gesteuert. Ändern Sie diese Attributwerte, um die Informationen zu ändern,
 // die einer Assembly zugeordnet sind.
 [assembly: AssemblyTitle("Einrichteblatt erstellen")]
-[assembly: AssemblyDescription("Erstellt kurze Dokumente, die den Inhalt von umfangreichen CNC-Programmen zusammenfassen (benötigte Werkzeuge, Nullpunktverschiebung, Unterprogramme).")]
+[assembly: AssemblyDescription("Erstellt eine zusammenfassende Datei\numfangreicher CNC-Programme.\nBeinhaltet:\n- Programmname \n- Benennung / Auftrag\n- Zeichnungs-Nummer\n- Benötigte Werkzeuge\n- Nullpunktverschiebung\n- Unterprogramme")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Henry Wünsche")]
 [assembly: AssemblyProduct("Einrichteblatt erstellen")]
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // Sie können alle Werte angeben oder Standardwerte für die Build- und Revisionsnummern verwenden,
 // übernehmen, indem Sie "*" eingeben:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.8.0.0")]
-[assembly: AssemblyFileVersion("0.8.0.0")]
+[assembly: AssemblyVersion("0.8.1.0")]
+[assembly: AssemblyFileVersion("0.8.1.0")]

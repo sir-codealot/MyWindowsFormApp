@@ -1,12 +1,4 @@
-﻿/*
- * 
- * 
- * 
- * 
- * 
- */
-
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -21,17 +13,18 @@ namespace WindowsFormsApp2
         static Assembly assembly = Assembly.GetExecutingAssembly();
         static FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
 
+        static string gitURL = "https://git.io/vblQ0";
         static String dotNetVer = "4.5.2";
         static String AboutMSG = fvi.Comments + 
                                  "\n\nVersion: " + fvi.FileVersion +
-                                 "\nBenötigte .NET-Version: " + dotNetVer +
+                                 "\n.NET Target-Version: " + dotNetVer +
                                  "\nAktualisiert am: " + new FileInfo(Assembly.GetExecutingAssembly().Location).LastWriteTime.ToShortDateString() +
                                  "\n\nAuthor: " + fvi.CompanyName +
-                                 "\n\nLizenz: " + fvi.LegalCopyright;
+                                 "\n\nLizenz: " + fvi.LegalCopyright +
+                                 "\nQuellcode: " + gitURL;
 
         public bool IsChecked = false;
         private String WorkingDir = "C:\\%USER%\\Documents";
-        private String LastDir = "";
         private static String DefaultFileName = "Einrichteblatt.txt";
 
         // Kapseln des Ueber-Strings - VS17 will das so
@@ -49,18 +42,12 @@ namespace WindowsFormsApp2
             OpenFileDialog openSourceFileDialog = new OpenFileDialog();
             openSourceFileDialog.InitialDirectory = WorkingDir;
             openSourceFileDialog.Filter = "NC-Dateien (*.nc; *.arc; *.mpf; *.spf) | *.nc; *.arc; *.mpf; *.spf |Alle Dateien| *.*";
-            openSourceFileDialog.ShowDialog();
-
-            try
-            {
-                WorkingDir = Path.GetDirectoryName(openSourceFileDialog.FileName);
-                DestTextBox.Text = WorkingDir + "\\" + DefaultFileName;
-                LastDir = openSourceFileDialog.FileName;
-            } catch (ArgumentException) {
-                // Mache nix   
+            
+            if (openSourceFileDialog.ShowDialog() == DialogResult.OK) {
+                DestTextBox.Text = Path.GetDirectoryName(openSourceFileDialog.FileName) + "\\" + DefaultFileName;
+                SourceTextBox.Text = openSourceFileDialog.FileName;
             }
-
-            SourceTextBox.Text = openSourceFileDialog.FileName;
+            
             IsChecked = false;
         }
 
@@ -72,10 +59,11 @@ namespace WindowsFormsApp2
             openDestFileDialog.Filter = "Textdateien (*.txt)| *txt|Alle Dateien| *.*";
             openDestFileDialog.FileName = "Einrichteblatt.txt";
             openDestFileDialog.DefaultExt = ".txt";
-            openDestFileDialog.ShowDialog();
-
-            DestTextBox.Text = openDestFileDialog.FileName;
-            IsChecked = true;
+            
+            if (openDestFileDialog.ShowDialog() == DialogResult.OK) {
+                DestTextBox.Text = openDestFileDialog.FileName;
+                IsChecked = true;
+            }
         }
 
         // Bei Klick Info-Text anzeigen
@@ -90,35 +78,34 @@ namespace WindowsFormsApp2
             // Kontrollieren, ob Eingaben alle korrekt sind und ob die Ausgabedatei evtl. bereits existiert
             if (String.IsNullOrWhiteSpace(InputFile) || String.IsNullOrEmpty(OutputFile))
                 MessageBox.Show("Fehler! Nicht alle benötigten Eingaben wurden vorgenommen!", "", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            else if (!File.Exists(Path.GetFullPath(InputFile)) || !File.Exists(Path.GetFullPath(OutputFile)) || !Directory.Exists(Path.GetDirectoryName(InputFile)))
+            else if (!File.Exists(Path.GetFullPath(InputFile)) || !Directory.Exists(Path.GetDirectoryName(InputFile)))
                 MessageBox.Show("Fehler! Falsche Eingabe oder Quelldatei existiert nicht!", "", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             else if (InputFile == OutputFile)
                 MessageBox.Show("Fehler\nQuell- und Ziel-Datei sind identisch!", "", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             else {
-                if (Directory.Exists(Path.GetDirectoryName(OutputFile))) {
+                if (Directory.Exists(Path.GetDirectoryName(OutputFile)))
                     // Abfragen, ob bereits gefragt wurde ob Datei ueberschrieben werden darf
-                    if (IsChecked) {
+                    if (IsChecked)
                         Result = DialogResult.Yes;
-                    } else {
-                        if (File.Exists(OutputFile)) {
-                            Result = MessageBox.Show("Zieldatei existiert bereits. Überschreiben?", "Frage", MessageBoxButtons.YesNo, icon: MessageBoxIcon.Warning);
-                        } else {
-                            IsChecked = true;
-                        }
+                    else
+                        if (File.Exists(OutputFile))
+                        Result = MessageBox.Show("Zieldatei existiert bereits. Überschreiben?", "Frage", MessageBoxButtons.YesNo, icon: MessageBoxIcon.Warning);
+                    else {
+                        IsChecked = true;
+                        Result = DialogResult.Yes;
                     }
-                } else {
+                else
                     Result = DialogResult.Yes;
-                }
 
+                // MessageBox.Show("IsChecked =" + IsChecked + "\nResult = " + Result, "DEBUG");
                 // Datei erstellen
                 if (Result == DialogResult.Yes) {
                     makeSheet(InputFile, OutputFile);                        // Datei erstellen
                     
                     // Fragen, ob die Datei direkt geoeffnet werden soll
                     Result = MessageBox.Show("Einrichteblatt wurde erstellt. Jetzt öffnen?", "Fertig", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                    if (Result == DialogResult.Yes) {
+                    if (Result == DialogResult.Yes)
                         Process.Start("notepad.exe", DestTextBox.Text);
-                    }
 
                     IsChecked = true;
                 }
@@ -139,6 +126,7 @@ namespace WindowsFormsApp2
             StreamWriter Stream = new StreamWriter(OutputFile);         // Stream-Objekt zum Speichern in die Zieldatei
 
             String PGMNAME = SearchForString("_MPF", InputFile);        // Hauptprogramm-Name
+            String AUFTRAG = SearchForString("AUFTRAG", InputFile);     // Zeile mit Bezeichnung/Auftrag finden
             String SPANNUNG = SearchForString("SPANNUNG", InputFile);   // Welche Spannung
             String LASTRUN = SearchForString("GELAUFEN", InputFile);    // Zeile mit Datum wann Programm zuletzt abgearbeitet wurde */
             String originX = "", originY = "", originZ = "";            // Fertige NP-Variablen
@@ -156,10 +144,15 @@ namespace WindowsFormsApp2
                     UNION = RadioBtn4.Checked;
 
             // Sachen in Datei schreiben
-            Stream.WriteLine("****  Programm  ****");
-            Stream.WriteLine("MPF" + PGMNAME.Replace("%_N_", "").Replace("MPF", "").Replace("_", ".MPF"));
+            Stream.WriteLine("-----------------------------------------------");
+            Stream.WriteLine("PROGRAMM: MPF" + PGMNAME.Replace("%_N_", "").Replace("MPF", "").Replace("_", ".MPF"));
+            if (AUFTRAG != "")
+                Stream.WriteLine(AUFTRAG.TrimStart(';').TrimStart().TrimStart('(').TrimEnd(')'));
+            foreach (String i in File.ReadLines(InputFile))
+                if (i.ToUpper().Contains("(ZEICHNUNG"))
+                    Stream.WriteLine(i.TrimStart(';').TrimStart().TrimStart('(').TrimEnd(')'));
             Stream.WriteLine(SPANNUNG.TrimStart(';').TrimStart(' ').TrimStart('(').TrimEnd(')').Replace(".", ". "));
-            Stream.WriteLine("********************"+Environment.NewLine);
+            Stream.WriteLine("-----------------------------------------------"+Environment.NewLine);
             
             // Datum, falls gefunden eintragen
             if (LASTRUN.Length > 1)
@@ -189,7 +182,7 @@ namespace WindowsFormsApp2
                 separator = "- ";
             }
             
-            Stream.WriteLine("Benoetigte Werkzeuge:");
+            Stream.WriteLine("Benoetigte Werkzeuge:" + Environment.NewLine + "---------------------");
             foreach (String i in File.ReadLines(InputFile)) {
                 if (i.Contains("WZP1") && !i.Contains("_DELETE") && !i.Contains("_STOP"))
                     Stream.WriteLine(preT + i.Replace("WZP1","").TrimStart(' ').Replace("(","").Replace(")","").Replace("\"","").Replace(";",separator));
@@ -200,13 +193,13 @@ namespace WindowsFormsApp2
             originZ = SearchForString(oriSearchZ, InputFile);  // NP-Beschreibung fuer Z finden
             
             if (originX != "" || originZ != "" || originZ != "") {
-                Stream.WriteLine(Environment.NewLine + "Nullpunkt:");
+                Stream.WriteLine(Environment.NewLine + "Nullpunkt:" + Environment.NewLine + "----------");
                 Stream.WriteLine(originX.TrimStart(';').TrimStart(' ').TrimStart('(').TrimEnd(')'));
                 Stream.WriteLine(originY.TrimStart(';').TrimStart(' ').TrimStart('(').TrimEnd(')'));
                 Stream.WriteLine(originZ.TrimStart(';').TrimStart(' ').TrimStart('(').TrimEnd(')'));
             }
 
-            Stream.WriteLine(Environment.NewLine + "Unterprogramme:");
+            Stream.WriteLine(Environment.NewLine + "Unterprogramme:" + Environment.NewLine + "---------------");
             
             // Fraes-UPs parsen
             Index = 0;
@@ -241,7 +234,7 @@ namespace WindowsFormsApp2
 
         public String SearchForString(String SearchString, String SearchFile) {
             foreach (String i in File.ReadLines(SearchFile)) {
-                if (i.Contains(SearchString)){
+                if (i.ToUpper().Contains(SearchString)){
                     return i;
                 }
             }
