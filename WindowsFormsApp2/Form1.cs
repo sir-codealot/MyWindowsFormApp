@@ -10,12 +10,12 @@ namespace WindowsFormsApp2
     public partial class mainWindow : Form
     {
         // ###############   Wichtige Variablen fuer die App   #######################
-        static Assembly assembly = Assembly.GetExecutingAssembly();
-        static FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
+        static private Assembly assembly = Assembly.GetExecutingAssembly();
+        static private FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
 
-        static string gitURL = "https://git.io/vblQ0";
-        static String dotNetVer = "4.5.2";
-        static String AboutMSG = fvi.Comments + 
+        static private string gitURL = "https://git.io/vblQ0";
+        static private string dotNetVer = "4.5.2";
+        static private string AboutMSG = fvi.Comments + 
                                  "\n\nVersion: " + fvi.FileVersion +
                                  "\n.NET Target-Version: " + dotNetVer +
                                  "\nAktualisiert am: " + new FileInfo(Assembly.GetExecutingAssembly().Location).LastWriteTime.ToShortDateString() +
@@ -23,12 +23,9 @@ namespace WindowsFormsApp2
                                  "\n\nLizenz: " + fvi.LegalCopyright +
                                  "\nQuellcode: " + gitURL;
 
-        public bool IsChecked = false;
-        private String WorkingDir = "C:\\%USER%\\Documents";
+        private bool IsChecked = false;
+        private string WorkingDir = "C:\\%USER%\\Documents";
         private static String DefaultFileName = "Einrichteblatt.txt";
-
-        // Kapseln des Ueber-Strings - VS17 will das so
-        public static string MsgString { get => AboutMSG; set => AboutMSG = value; }
 
         // ################   Fenster-Logik zusammenreimen   ###########################
         public mainWindow()
@@ -57,7 +54,7 @@ namespace WindowsFormsApp2
             SaveFileDialog openDestFileDialog = new SaveFileDialog();
             openDestFileDialog.InitialDirectory = WorkingDir;
             openDestFileDialog.Filter = "Textdateien (*.txt)| *txt|Alle Dateien| *.*";
-            openDestFileDialog.FileName = "Einrichteblatt.txt";
+            openDestFileDialog.FileName = DefaultFileName;
             openDestFileDialog.DefaultExt = ".txt";
             
             if (openDestFileDialog.ShowDialog() == DialogResult.OK) {
@@ -67,12 +64,12 @@ namespace WindowsFormsApp2
         }
 
         // Bei Klick Info-Text anzeigen
-        private void AboutBtn_Click(object sender, EventArgs e) => MessageBox.Show(MsgString, caption: "Info", buttons: MessageBoxButtons.OK, icon: MessageBoxIcon.Question);
+        private void AboutBtn_Click(object sender, EventArgs e) => MessageBox.Show(AboutMSG, caption: "Info", buttons: MessageBoxButtons.OK, icon: MessageBoxIcon.Question);
 
         // Datei erstellen
         private void MakeBtn_Click(object sender, EventArgs e) {
-            String InputFile = SourceTextBox.Text;
-            String OutputFile = DestTextBox.Text;
+            string InputFile = SourceTextBox.Text;
+            string OutputFile = DestTextBox.Text;
             DialogResult Result = DialogResult.No;
 
             // Kontrollieren, ob Eingaben alle korrekt sind und ob die Ausgabedatei evtl. bereits existiert
@@ -125,30 +122,30 @@ namespace WindowsFormsApp2
         {
             StreamWriter Stream = new StreamWriter(OutputFile);         // Stream-Objekt zum Speichern in die Zieldatei
 
-            String PGMNAME = SearchForString("_MPF", InputFile);        // Hauptprogramm-Name
-            String AUFTRAG = SearchForString("AUFTRAG", InputFile);     // Zeile mit Bezeichnung/Auftrag finden
-            String SPANNUNG = SearchForString("SPANNUNG", InputFile);   // Welche Spannung
-            String LASTRUN = SearchForString("GELAUFEN", InputFile);    // Zeile mit Datum wann Programm zuletzt abgearbeitet wurde */
-            String originX = "", originY = "", originZ = "";            // Fertige NP-Variablen
-            String oriSearchX = ";(X0 =";           // String fuer X-NP Kommentarsuche
-            String oriSearchY = ";(Y0 =";           // String fuer Y-NP Kommentarsuche
-            String oriSearchZ = ";(Z0 =";           // String fuer Z-NP Kommentarsuche
-            String preT = "T";                      // Vorangestelltes "T" in der WZ-Liste, maschinenabhaengig
-            String separator = "- ";                // Bindestrich fuer WZ-Liste, maschinenabhaengig
-            String Comment = "";                    // Variable fuer UP-Beschreibung
-            String placeholder = " - UP FRAESEN";   // Platzhalter-String
+            string PGMNAME = SearchForString("_MPF", InputFile);        // Hauptprogramm-Name
+            string AUFTRAG = SearchForString("AUFTRAG", InputFile);     // Zeile mit Bezeichnung/Auftrag finden
+            string SPANNUNG = SearchForString("SPANNUNG", InputFile);   // Welche Spannung
+            string LASTRUN = SearchForString("GELAUFEN", InputFile);    // Zeile mit Datum wann Programm zuletzt abgearbeitet wurde */
+            string originX = "", originY = "", originZ = "";            // Fertige NP-Variablen
+            string oriSearchX = ";(X0 =";           // String fuer X-NP Kommentarsuche
+            string oriSearchY = ";(Y0 =";           // String fuer Y-NP Kommentarsuche
+            string oriSearchZ = ";(Z0 =";           // String fuer Z-NP Kommentarsuche
+            string preT = "T";                      // Vorangestelltes "T" in der WZ-Liste, maschinenabhaengig
+            string separator = "- ";                // Bindestrich fuer WZ-Liste, maschinenabhaengig
+            string Comment = "";                    // Variable fuer UP-Beschreibung
+            string placeholder = " - UP FRAESEN";   // Platzhalter-String
             int Index = 0;                          // Index-Variable fuer gezieltes Suchen in Datei
-            Boolean DMC100 = RadioBtn1.Checked,     // Fuer bessere Lesbarkeit innerhalb der Funktionen
-                    UNIPORT = RadioBtn2.Checked,
-                    FOREST = RadioBtn3.Checked,
-                    UNION = RadioBtn4.Checked;
+            bool DMC100 = RadioBtn1.Checked,        // Fuer bessere Lesbarkeit innerhalb der Funktionen
+                 UNIPORT = RadioBtn2.Checked,
+                 FOREST = RadioBtn3.Checked,
+                 UNION = RadioBtn4.Checked;
 
             // Sachen in Datei schreiben
             Stream.WriteLine("-----------------------------------------------");
             Stream.WriteLine("PROGRAMM: MPF" + PGMNAME.Replace("%_N_", "").Replace("MPF", "").Replace("_", ".MPF"));
             if (AUFTRAG != "")
                 Stream.WriteLine(AUFTRAG.TrimStart(';').TrimStart().TrimStart('(').TrimEnd(')'));
-            foreach (String i in File.ReadLines(InputFile))
+            foreach (string i in File.ReadLines(InputFile))
                 if (i.ToUpper().Contains("(ZEICHNUNG"))
                     Stream.WriteLine(i.TrimStart(';').TrimStart().TrimStart('(').TrimEnd(')'));
             Stream.WriteLine(SPANNUNG.TrimStart(';').TrimStart(' ').TrimStart('(').TrimEnd(')').Replace(".", ". "));
@@ -183,7 +180,7 @@ namespace WindowsFormsApp2
             }
             
             Stream.WriteLine("Benoetigte Werkzeuge:" + Environment.NewLine + "---------------------");
-            foreach (String i in File.ReadLines(InputFile)) {
+            foreach (string i in File.ReadLines(InputFile)) {
                 if (i.Contains("WZP1") && !i.Contains("_DELETE") && !i.Contains("_STOP"))
                     Stream.WriteLine(preT + i.Replace("WZP1","").TrimStart(' ').Replace("(","").Replace(")","").Replace("\"","").Replace(";",separator));
             }
@@ -203,7 +200,7 @@ namespace WindowsFormsApp2
             
             // Fraes-UPs parsen
             Index = 0;
-            foreach (String i in File.ReadLines(InputFile))
+            foreach (string i in File.ReadLines(InputFile))
             {
                 if (i.Contains("%_N_L") && i.Contains("_SPF")) {
                     Comment = getMillComment(InputFile, i, placeholder, DMC100, UNIPORT, FOREST, UNION);
@@ -218,9 +215,9 @@ namespace WindowsFormsApp2
             if (Comment != "")
                 Stream.WriteLine();
 
-            // Bohr-UPs
+            // Bohr-UPs parsen
             Index = 0;
-            foreach (String i in File.ReadLines(InputFile))
+            foreach (string i in File.ReadLines(InputFile))
             {
                 if (i.Contains("%_N_UP") && i.Contains("_SPF")) {
                     Comment = File.ReadLines(InputFile).Skip(Index+2).Take(1).First().Replace(";", "").Replace("--", "").TrimStart();
@@ -232,8 +229,8 @@ namespace WindowsFormsApp2
             Stream.Close();
         }
 
-        public String SearchForString(String SearchString, String SearchFile) {
-            foreach (String i in File.ReadLines(SearchFile)) {
+        public string SearchForString(string SearchString, string SearchFile) {
+            foreach (string i in File.ReadLines(SearchFile)) {
                 if (i.ToUpper().Contains(SearchString)){
                     return i;
                 }
@@ -241,120 +238,96 @@ namespace WindowsFormsApp2
             return "";
         }
 
-        public String getMillComment(String InFile, String UP, String plh, Boolean DMC100, Boolean UNIPORT, Boolean FOREST, Boolean UNION){
-            String FIRST_L = "";
-            String comm = "";
-            String[] com;
-            String UPnotUsed = " - !!! Unterprogramm wird nicht verwendet !!!";
+        //
+        // Kommentar zu Fraes-UPs zusammenbasteln
+        // Hier wird auf die maschinenspezifischen Programm-Eigenschaften Ruecksicht genommen
+        //
+        public String getMillComment(string InFile, string UP, string plh, bool DMC100, bool UNIPORT, bool FOREST, bool UNION){
+            string comm = "";
+            string[] com;
+            string UPnotUsed = " - !!! Unterprogramm wird nicht verwendet !!!";
             int Idx = 0;
-            Boolean found = false;
+            bool found = false;
 
             if (DMC100) {
-                FIRST_L = UP.Replace("%_N_", "").Replace("_SPF", "");
-                foreach (String i in File.ReadLines(InFile)){
-                    if (i.Contains(FIRST_L)) {
-                        found = true;
-                        break;
-                    } else
-                        Idx++;
-                }
-
+                // Fraes-UP suchen
+                checkUPs("L", InFile, ref UP, ref Idx, ref found);
+                
                 if (!found)
                     return UPnotUsed;
 
                 while ((!comm.Contains(";(")) || (comm.Contains("(AKS ")) || (comm.Contains("VORSCHUB"))) {
                     Idx--;
                     comm = File.ReadLines(InFile).Skip(Idx).Take(1).First();
-                    if (comm.EndsWith("M6")) { 
+                    if (comm.EndsWith("M6"))
                         return plh;
-                    }
                 }
                 com = comm.Split(';');
                 return " - " + com[1].Replace("(", "").Replace(")", "");
 
             } else if (UNIPORT) {
-                FIRST_L = UP.Replace("%_N_L", "R500=").Replace("_SPF", "");
-
-                foreach (String i in File.ReadLines(InFile)) {
-                    if (i.Contains(FIRST_L)){
-                        found = true;
-                        break;
-                    } else {
-                        Idx++;
-                    }
-                }
+                // Fraes-UP suchen
+                checkUPs("R500=", InFile, ref UP, ref Idx, ref found);
 
                 if (!found)
                     return UPnotUsed;
 
                 while (!comm.Contains("; (") || (comm.Contains("; (A") && comm.Contains("C") && comm.Contains(".")) || (comm.Contains("CYCLE800(")) || (comm.Contains("; (AK "))) {
+                    Idx--;
                     comm = File.ReadLines(InFile).Skip(Idx).Take(1).First();
-                    if (comm.EndsWith("M6") || comm.EndsWith("M66")) {
+                    if (comm.EndsWith("M6") || comm.EndsWith("M66"))
                         return plh;
-                    } else {
-                        Idx--;
-                    }
                 }
-
                 com = comm.Split(';');
                 return " - " + com[1].TrimStart().Replace("(", "").Replace(")", "");
 
             } else if (FOREST) {
-                FIRST_L = UP.Replace("%_N_L", "R500=").Replace("_SPF", "");
-
-                foreach (String i in File.ReadLines(InFile)) {
-                    if (i.Contains(FIRST_L)) {
-                        found = true;
-                        break;
-                    } else {
-                        Idx++;
-                    }
-                }
+                // Fraes-UP suchen
+                checkUPs("R500=", InFile, ref UP, ref Idx, ref found);
 
                 if (!found)
                     return UPnotUsed;
 
-                while (!(comm.Contains("DEC("))) {
+                while (!comm.Contains(";(") && !comm.Contains("DEC(")) {
+                    Idx--;
                     comm = File.ReadLines(InFile).Skip(Idx).Take(1).First();
-
-                    if (comm.Contains(";("))
-                        break;
-
                     if (comm.Contains("M6"))
                         return plh;
-                    Idx--;
                 }
                 com = comm.Split(';');
                 return " - " + com[1].TrimStart().Replace("(", "").Replace(")", "");
+
             } else {
-                FIRST_L = UP.Replace("%_N_L", "R500=").Replace("_SPF", "");
+                // Fraes-UP suchen
+                checkUPs("R500=", InFile,ref UP, ref Idx, ref found);
 
-                foreach (String i in File.ReadLines(InFile)) {
-                    if (i.Contains(FIRST_L)) {
-                        found = true;
-                        break;
-                    } else {
-                        Idx++;
-                    }
-                }
+                if (!found) return UPnotUsed;
 
-                if (!found)
-                    return UPnotUsed;
-
-                while (!comm.Contains("ATC")) {
+                while (!comm.Contains(";(") || comm.Contains("ACHS")) {
+                    Idx--;
                     comm = File.ReadLines(InFile).Skip(Idx).Take(1).First();
-
-                    if (comm.Contains(";(") && !comm.Contains("ACHS"))
-                        break;
-
                     if (comm.Contains("M6"))
                         return plh;
-                    Idx--;
                 }
-
                 com = comm.Split(';');
                 return " - " + com[1].TrimStart().Replace("(", "").Replace(")", "");
             }
+        }
+        
+        //
+        // Abarbeiten der Fraes-UP Suche
+        // "Idx" und "found" sind als Referenz angegeben (sehr praktisch!)
+        //
+        private void checkUPs(string repStrg, string searchFile, ref string UP, ref int Idx, ref bool found) {
+            // Bastelt den Such-String zusammen
+            string FIRST_L = UP.Replace("%_N_L", repStrg).Replace("_SPF", "");
+
+            foreach (string i in File.ReadLines(searchFile))
+                if (i.Contains(FIRST_L)) {
+                    found = true;
+                    break;
+                } else
+                    Idx++;
         }
     }
 }
