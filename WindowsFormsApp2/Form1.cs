@@ -63,6 +63,19 @@ namespace WindowsFormsApp2
             }
         }
 
+        // Falls die Datei im Ausgabe-Pfad vorhanden ist wird der "Oeffnen"-Button Aktiviert
+        private void DestTextBox_TextChanged(object sender, EventArgs e) {
+            if (File.Exists(@DestTextBox.Text))
+                OpenBtn.Enabled = true;
+            else
+                OpenBtn.Enabled = false;
+        }
+
+        // Wenn Zieldatei-Pfad gueltig ist wird die Datei in Notepad geöffnet
+        private void OpenBtn_Click(object sender, EventArgs e) {
+                Process.Start("notepad.exe", DestTextBox.Text);
+        }
+
         // Bei Klick Info-Text anzeigen
         private void AboutBtn_Click(object sender, EventArgs e) => MessageBox.Show(AboutMSG, caption: "Info", buttons: MessageBoxButtons.OK, icon: MessageBoxIcon.Question);
 
@@ -75,17 +88,17 @@ namespace WindowsFormsApp2
             // Kontrollieren, ob Eingaben alle korrekt sind und ob die Ausgabedatei evtl. bereits existiert
             if (String.IsNullOrWhiteSpace(InputFile) || String.IsNullOrEmpty(OutputFile))
                 MessageBox.Show("Fehler! Nicht alle benötigten Eingaben wurden vorgenommen!", "", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            else if (!File.Exists(Path.GetFullPath(InputFile)) || !Directory.Exists(Path.GetDirectoryName(InputFile)))
+            else if (!File.Exists(Path.GetFullPath(@InputFile)) || !Directory.Exists(Path.GetDirectoryName(@InputFile)))
                 MessageBox.Show("Fehler! Falsche Eingabe oder Quelldatei existiert nicht!", "", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             else if (InputFile == OutputFile)
                 MessageBox.Show("Fehler\nQuell- und Ziel-Datei sind identisch!", "", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             else {
-                if (Directory.Exists(Path.GetDirectoryName(OutputFile)))
+                if (Directory.Exists(Path.GetDirectoryName(@OutputFile)))
                     // Abfragen, ob bereits gefragt wurde ob Datei ueberschrieben werden darf
                     if (IsChecked)
                         Result = DialogResult.Yes;
                     else
-                        if (File.Exists(OutputFile))
+                        if (File.Exists(@OutputFile))
                         Result = MessageBox.Show("Zieldatei existiert bereits. Überschreiben?", "Frage", MessageBoxButtons.YesNo, icon: MessageBoxIcon.Warning);
                     else {
                         IsChecked = true;
@@ -97,7 +110,7 @@ namespace WindowsFormsApp2
                 // MessageBox.Show("IsChecked =" + IsChecked + "\nResult = " + Result, "DEBUG");
                 // Datei erstellen
                 if (Result == DialogResult.Yes) {
-                    makeSheet(InputFile, OutputFile);                        // Datei erstellen
+                    makeSheet(@InputFile, @OutputFile);                        // Datei erstellen
                     
                     // Fragen, ob die Datei direkt geoeffnet werden soll
                     Result = MessageBox.Show("Einrichteblatt wurde erstellt. Jetzt öffnen?", "Fertig", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
@@ -329,5 +342,6 @@ namespace WindowsFormsApp2
                 } else
                     Idx++;
         }
+
     }
 }

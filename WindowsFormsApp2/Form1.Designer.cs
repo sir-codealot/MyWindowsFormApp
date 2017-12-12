@@ -43,6 +43,7 @@
             this.RadioBtn2 = new System.Windows.Forms.RadioButton();
             this.RadioBtn4 = new System.Windows.Forms.RadioButton();
             this.RadioBtn3 = new System.Windows.Forms.RadioButton();
+            this.OpenBtn = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // SourceLabel
@@ -68,6 +69,7 @@
             this.DestTextBox.Name = "DestTextBox";
             this.DestTextBox.Size = new System.Drawing.Size(320, 20);
             this.DestTextBox.TabIndex = 3;
+            this.DestTextBox.TextChanged += new System.EventHandler(this.DestTextBox_TextChanged);
             // 
             // DestLabel
             // 
@@ -183,11 +185,23 @@
             this.RadioBtn3.Text = "Forest";
             this.RadioBtn3.UseVisualStyleBackColor = true;
             // 
+            // OpenBtn
+            // 
+            this.OpenBtn.Enabled = false;
+            this.OpenBtn.Location = new System.Drawing.Point(202, 270);
+            this.OpenBtn.Name = "OpenBtn";
+            this.OpenBtn.Size = new System.Drawing.Size(75, 23);
+            this.OpenBtn.TabIndex = 14;
+            this.OpenBtn.Text = "Öffnen";
+            this.OpenBtn.UseVisualStyleBackColor = true;
+            this.OpenBtn.Click += new System.EventHandler(this.OpenBtn_Click);
+            // 
             // mainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(450, 307);
+            this.Controls.Add(this.OpenBtn);
             this.Controls.Add(this.SourceTextBox);
             this.Controls.Add(this.RadioBtn4);
             this.Controls.Add(this.RadioBtn3);
@@ -228,6 +242,7 @@
         private System.Windows.Forms.RadioButton RadioBtn2;
         private System.Windows.Forms.RadioButton RadioBtn4;
         private System.Windows.Forms.RadioButton RadioBtn3;
+        private System.Windows.Forms.Button OpenBtn;
     }
 }
 
