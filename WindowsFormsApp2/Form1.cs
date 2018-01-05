@@ -73,7 +73,15 @@ namespace WindowsFormsApp2
 
         // Wenn Zieldatei-Pfad gueltig ist wird die Datei in Notepad geöffnet
         private void OpenBtn_Click(object sender, EventArgs e) {
+            // Nochmalige Abfrage, ob Zieldatei immernoch vorhanden ist.
+            // Falls nicht wird eine Fehlermeldung ausgegeben und der
+            // "Oeffnen"-Button deaktiviert
+            if (File.Exists(DestTextBox.Text))
                 Process.Start("notepad.exe", DestTextBox.Text);
+            else {
+                MessageBox.Show("Datei nicht gefunden", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                OpenBtn.Enabled = false;
+            }
         }
 
         // Bei Klick Info-Text anzeigen
@@ -111,12 +119,17 @@ namespace WindowsFormsApp2
                 // Datei erstellen
                 if (Result == DialogResult.Yes) {
                     makeSheet(@InputFile, @OutputFile);                        // Datei erstellen
-                    
-                    // Fragen, ob die Datei direkt geoeffnet werden soll
-                    Result = MessageBox.Show("Einrichteblatt wurde erstellt. Jetzt öffnen?", "Fertig", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                    if (Result == DialogResult.Yes)
-                        Process.Start("notepad.exe", DestTextBox.Text);
 
+                    // Nach Erstellen der Zusammenfassung pruefen ob Datei vorhanden ist und gegebenenfalls
+                    // den "Oeffnen"-Button aktivieren
+                    if (File.Exists(@DestTextBox.Text)) {
+                        // Fragen, ob die Datei direkt geoeffnet werden soll
+                        Result = MessageBox.Show("Einrichteblatt wurde erstellt. Jetzt öffnen?", "Fertig", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                        if (Result == DialogResult.Yes)
+                            Process.Start("notepad.exe", DestTextBox.Text);
+
+                        OpenBtn.Enabled = true;
+                    }
                     IsChecked = true;
                 }
             }
