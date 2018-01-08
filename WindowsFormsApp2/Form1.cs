@@ -349,7 +349,7 @@ namespace WindowsFormsApp2
             string FIRST_L = UP.Replace("%_N_L", repStrg).Replace("_SPF", "");
 
             foreach (string i in File.ReadLines(searchFile))
-                if (i.Contains(FIRST_L) && !i.Contains("%_N_") {
+                if (i.Contains(FIRST_L) && !i.Contains("%_N_")) {
                     found = true;
                     break;
                 } else
